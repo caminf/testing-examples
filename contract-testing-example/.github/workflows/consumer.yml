@@ -1,0 +1,42 @@
+# Workflow con GitHub Actions para pruebas de contrato del consumidor
+name: Consumer Contract Tests
+
+on:
+  push:
+    paths:
+      - "cart-service/**"
+
+jobs:
+  consumer-contract:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cart-service
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run consumer contract tests
+        run: npm test
+
+      - name: Upload pact file
+        uses: actions/upload-artifact@v3
+        with:
+          name: cart-pacts
+          path: cart-service/pacts/*.json
+
+####
+      - name: Publish contract to Pact Broker
+        run: |
+          npx pact-broker publish ./pacts \
+            --consumer-app-version $GITHUB_SHA \
+            --broker-base-url ${{ secrets.PACT_BROKER_URL }} \
+            --broker-token ${{ secrets.PACT_BROKER_TOKEN }}

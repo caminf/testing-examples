@@ -1,0 +1,32 @@
+# Ignorar archivos generados por Java
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+
+# Ignorar archivos de configuración del IDE
+.idea/
+.vscode/
+*.iml
+
+# Ignorar archivos de Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Ignorar archivos de configuración de Docker
+.docker/
+
+# Ignorar archivos generados por los sistemas operativos
+.DS_Store
+Thumbs.db
+
+# Archivos de configuración de Maven
+*.log
+*.bak
+
+# Ignorar archivos temporales
+*.tmp
+*.swp

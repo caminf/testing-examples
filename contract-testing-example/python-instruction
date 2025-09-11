@@ -1,0 +1,16 @@
+
+python -m venv .venv
+source .venv/bin/activate
+
+
+pip install pact-python requests pytest fastapi uvicorn jsonschema
+
+
+pytest consumer/tests/test_consumer.py
+
+
+uvicorn provider.app:app --port 8000
+
+pytest tests_provider/test_provider_verify.py #utilizando el verify de pact-python
+
+python verify_manual.py #utilizando verify creado manualmente

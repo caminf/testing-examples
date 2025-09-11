@@ -1,0 +1,49 @@
+# Workflow con GitHub Actions para pruebas de contrato usando Docker
+name: Contract Testing with Docker
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  consumer-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build consumer image
+        run: docker build -t cart-service ./cart-service
+
+      - name: Run consumer container and tests
+        run: |
+          docker run --rm \
+            -e PACT_BROKER_BASE_URL=${{ secrets.PACT_BROKER_BASE_URL }} \
+            -e PACT_BROKER_TOKEN=${{ secrets.PACT_BROKER_TOKEN }} \
+            cart-service npm test
+
+      - name: Copy generated pact file
+        run: docker cp $(docker create cart-service):/app/pacts ./pacts
+
+      - name: Publish pact to PactFlow
+        run: npx pact-broker publish ./pacts --consumer-app-version $GITHUB_SHA
+        env:
+          PACT_BROKER_BASE_URL: ${{ secrets.PACT_BROKER_BASE_URL }}
+          PACT_BROKER_TOKEN: ${{ secrets.PACT_BROKER_TOKEN }}
+
+  provider-verification:
+    runs-on: ubuntu-latest
+    needs: consumer-contract
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build provider image
+        run: docker build -t catalog-service ./catalog-service
+
+      - name: Run provider container
+        run: docker run -d -p 8080:8080 --name catalog-service catalog-service
+
+      - name: Verify provider against PactFlow
+        run: docker exec catalog-service npm run test:pact
+        env:
+          PACT_BROKER_BASE_URL: ${{ secrets.PACT_BROKER_BASE_URL }}
+          PACT_BROKER_TOKEN: ${{ secrets.PACT_BROKER_TOKEN }}

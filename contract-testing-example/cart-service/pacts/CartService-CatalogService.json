@@ -1,0 +1,41 @@
+{
+  "consumer": {
+    "name": "CartService"
+  },
+  "interactions": [
+    {
+      "description": "una solicitud GET a /products/101",
+      "providerState": "un producto con id 101 existe",
+      "request": {
+        "method": "GET",
+        "path": "/products/101"
+      },
+      "response": {
+        "body": {
+          "id": 101,
+          "name": "Laptop",
+          "price": 1200.5
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "status": 200
+      }
+    }
+  ],
+  "metadata": {
+    "pact-js": {
+      "version": "15.0.1"
+    },
+    "pactRust": {
+      "ffi": "0.4.22",
+      "models": "1.2.3"
+    },
+    "pactSpecification": {
+      "version": "2.0.0"
+    }
+  },
+  "provider": {
+    "name": "CatalogService"
+  }
+}

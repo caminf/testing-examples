@@ -1,0 +1,70 @@
+name: Provider Contract Verification
+
+on:
+  workflow_run:
+    workflows: ["Consumer Contract Tests"]
+    types:
+      - completed
+
+jobs:
+  provider-verification:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: catalog-service
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Download pact file
+        uses: actions/download-artifact@v3
+        with:
+          name: cart-pacts
+          path: ./pacts
+
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Verify provider against consumer contract
+        run: npm run test:pact
+
+name: Provider Contract Verification
+
+on:
+  push:
+    paths:
+      - "catalog-service/**"
+
+jobs:
+  provider-verification:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: catalog-service
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+########
+      - name: Verify against Pact Broker
+        run: |
+          npx pact-broker can-i-deploy \
+            --pacticipant CatalogService \
+            --version $GITHUB_SHA \
+            --to-environment production \
+            --broker-base-url ${{ secrets.PACT_BROKER_URL }} \
+            --broker-token ${{ secrets.PACT_BROKER_TOKEN }}
+
+          npm run test:pact

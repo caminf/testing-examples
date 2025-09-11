@@ -1,0 +1,15 @@
+# Docker Compose para pruebas de contrato entre consumidor y proveedor
+version: "3.9"
+services:
+  consumer:
+    build: ./consumer
+    volumes:
+      - ./consumer/pacts:/app/pacts   # compartir contrato generado
+    depends_on: []
+  
+  provider:
+    build: ./provider
+    volumes:
+      - ./consumer/pacts:/app/../consumer/pacts  # provider lee contrato del consumer
+    depends_on:
+      - consumer
